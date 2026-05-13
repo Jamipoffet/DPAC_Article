@@ -98,21 +98,19 @@ Censored values do not provide an exact measurement but a **constraint**: the tr
 **Left censoring** (`<LoD` — value below the detection limit):
 
 ```python
-p = normal_cdf(log_LOD[orig_idx_left[i]], mu_i[ci], sigma_W)
-pm.Potential(f"cens_left_{i}", pm.math.log(p + 1e-10))
+pm.Potential(f"cl_{i}", pm.math.log(normal_cdf(ll, mu_i[ci], sigma_W) + 1e-10))
 ```
 
-The probability that the true value is below LoD is the CDF of the normal distribution evaluated at `log(LoD)`. This is exactly `P(X < LoD)` under the distribution of group `ci`.
+The probability that the true value is below LoD is the CDF of the normal distribution evaluated at `ll = log(LoD)`. This is exactly `P(X < LoD)` under the distribution of group `ci`.
 
 **Interval censoring** (`[LoD-LoQ]` — value between LoD and LoQ):
 
 ```python
-p = normal_cdf(log_LOQ[orig_idx_int[i]], mu_i[ci], sigma_W) \
-  - normal_cdf(log_LOD[orig_idx_int[i]], mu_i[ci], sigma_W)
-pm.Potential(f"cens_int_{i}", pm.math.log(p + 1e-10))
+p = normal_cdf(lq, mu_i[ci], sigma_W) - normal_cdf(ll, mu_i[ci], sigma_W)
+pm.Potential(f"ci_{i}", pm.math.log(p + 1e-10))
 ```
 
-The probability that the true value lies in `[LoD, LoQ]` is the difference of the CDF at both bounds: `P(LoD ≤ X ≤ LoQ)`. Each row can have its own `log_LOD[i]` and `log_LOQ[i]`, which is why per-row LoD/LoQ management is essential when different sensors have different detection thresholds.
+The probability that the true value lies in `[LoD, LoQ]` is the difference of the CDF at both bounds: `P(LoD ≤ X ≤ LoQ)`. `ll = log(LoD)` and `lq = log(LoQ)` are single scalar values, shared across all censored measurements in the file.
 
 #### 5. Derived quantities
 
@@ -133,8 +131,8 @@ When writing `pm.Uniform`, `pm.Normal`, `pm.Potential`, etc., PyMC does no numer
 log p(θ | data) = log p(μ) + log p(σ_B) + log p(σ_W)     ← log-priors
                + Σ_i log p(z_i)                            ← random effects
                + Σ_j log p(x_j | μ_{g(j)}, σ_W)           ← detected values
-               + Σ_k log P(X_k < LoD_k | ...)             ← left-censored
-               + Σ_l log P(LoD_l ≤ X_l ≤ LoQ_l | ...)     ← interval-censored
+               + Σ_k log P(X_k < LoD | ...)               ← left-censored
+               + Σ_l log P(LoD ≤ X_l ≤ LoQ | ...)         ← interval-censored
 ```
 
 where `θ = (μ, σ_B, σ_W, z_1, …, z_n)` is the vector of **all free parameters** — in our case 3 + n_groups scalars.
@@ -197,47 +195,35 @@ The Excel file must contain at least two columns (case-insensitive names):
 | `<0.01` | Left-censored (below LoD) | LoD = 0.01 |
 | `[0.001-0.02]` | Interval-censored (between LoD and LoQ) | LoD = 0.001, LoQ = 0.02 |
 
-LoD and LoQ are extracted automatically from the value strings. Explicit columns `LoD effectif` / `LoQ effectif` override the parsed values if present (useful when thresholds vary by row or by instrument).
+Optional columns `LoD effectif` / `LoQ effectif` set the detection thresholds globally for the file (defaults: LoD = 0.01, LoQ = 0.033 if absent).
 
 ---
 
-## Using DPAC.ipynb
+## Using DPAC_publication.ipynb
 
 ### Quick start
 
-1. Open `DPAC.ipynb` in JupyterLab or VS Code
-2. Run the **Imports** cell
-3. Run the **Configuration** cell — fill in the form (file, output folder, acceptable risk, criterion percentile) and click **✓ Apply**
-4. Run the **Utility functions** cell (once per session)
-5. Go to the desired section
+1. Open `DPAC_publication.ipynb` in JupyterLab or VS Code
+2. Run the single code cell (Shift+Enter) — a configuration form appears
+3. Choose the output folder, select your data files (one per exposure scenario), set the risk parameters
+4. Click **▶ Run Analysis** — the model runs for each file in sequence, the logfile is updated, and both graphs are generated automatically
 
-### Available sections
+### What the notebook produces
 
-#### Section 1 — Interactive analysis (single file)
+**After each run:**
 
-Complete analysis in five sequential steps:
-
-| Step | Description |
+| Output | Description |
 |---|---|
-| Step 1 | Load and inspect data (groups, censoring summary) |
-| Step 2 | Build the hierarchical PyMC model |
-| Step 3 | MCMC sampling (≈ 1–5 min depending on dataset size) |
-| Step 4 | Compute DPAC, IC90, IC50 and plot posterior distributions |
-| Step 5 | Export to `DPAC_logfile.xlsx` (`DPAC Log` and `*_risk` sheets) |
+| `DPAC_logfile.xlsx` — `DPAC Log` sheet | One row per file: GM, GSD, DPAC, IC90, IC50 |
+| `DPAC_logfile.xlsx` — `*_risk` sheets | Risk curve data (overexposure% vs OEL, 100 points) |
+| Risk curves plot | Overexposure% vs OEL with IC90/IC50 credible bands |
+| Comparative chart | Horizontal IC90/IC50 comparison across all analysed files |
 
-At the end of Step 5, an **interactive menu** offers to immediately start a new analysis, plot risk curves, or open the comparative chart.
-
-#### Section 3 — Risk curves
-
-Plots the **overexposure fraction (%) vs OEL** for each analysis stored in the logfile. Each curve is shown with its credible intervals:
+### Risk curve reading
 
 - Light grey band: IC90 (90% credible interval)
 - Dark grey band: IC50 (50% credible interval)
 - Green dot: DPAC value at the target risk level
-
-#### Section 4 — Comparative DPAC chart
-
-Horizontal comparison of IC90 and IC50 across all logfile analyses. Useful for comparing multiple workstations, conditions, or studies in a single report.
 
 ---
 
