@@ -263,4 +263,4 @@ r̂ > 1.01 on `sigma_B` or `sigma_W` may indicate a Neal's funnel geometry. The 
 
 ## Reference
 
-Lavoué J, Vadali M, Ramachandran G (2019). *Expostats: A Bayesian Toolkit to Assist the Interpretation of Occupational Exposure Measurements.* Annals of Work Exposures and Health, 63(3), 267–279. https://doi.org/10.1093/annweh/wxy110
+Lavoué J, Vadali M, Ramachandran G (2019). *Expostats: A Bayesian Toolkit to Assist the Interpretation of Occupational Exposure Measurements.* Annals of Work Exposures and Health, 63(3), 267–279. https://academic.oup.com/annweh/article-abstract/63/3/267/5248301?redirectedFrom=fulltext
