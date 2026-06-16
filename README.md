@@ -6,7 +6,7 @@ The **DPAC** (*Decision Point for Adequate Control*) is a Bayesian statistical i
 
 In practice, the DPAC is the concentration below which the 95th percentile of exposure falls — i.e., the value exceeded by no more than 5% of workers or situations — with a posterior probability of 70%. It is expressed in the same unit as the measurements (e.g. ppm or mg/m³).
 
-The method is based on **Expostats Tool 2** (Lavoué et al. 2019, *Ann. Occup. Hyg.*).
+The method is based on **Expostats Tool 2** (Lavoué et al. 2019, *Ann. Work Expo. Health*).
 
 ---
 
@@ -263,4 +263,4 @@ r̂ > 1.01 on `sigma_B` or `sigma_W` may indicate a Neal's funnel geometry. The 
 
 ## Reference
 
-Lavoué J, Vadali M, Ramachandran G (2019). *Expostats: A Bayesian Toolkit to Assist the Interpretation of Occupational Exposure Measurements.* Annals of Work Exposures and Health, 63(3), 267–279. https://academic.oup.com/annweh/article-abstract/63/3/267/5248301?redirectedFrom=fulltext
+Lavoué J, Joseph L, Knott P, Davies H, Labrèche F, Clerc F, Mater G, Kirkham T (2019). *Expostats: A Bayesian Toolkit to Aid the Interpretation of Occupational Exposure Measurements.* Annals of Work Exposures and Health, 63(3), 267–279. https://doi.org/10.1093/annweh/wxy100
