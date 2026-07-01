@@ -264,3 +264,9 @@ r̂ > 1.01 on `sigma_B` or `sigma_W` may indicate a Neal's funnel geometry. The 
 ## Reference
 
 Lavoué J, Joseph L, Knott P, Davies H, Labrèche F, Clerc F, Mater G, Kirkham T (2019). *Expostats: A Bayesian Toolkit to Aid the Interpretation of Occupational Exposure Measurements.* Annals of Work Exposures and Health, 63(3), 267–279. https://doi.org/10.1093/annweh/wxy100
+
+---
+
+## Use of a generative artificial intelligence tool
+
+The generative artificial intelligence tool Claude (Anthropic; version Opus 4.8, used between April 2026 and July 2026) has assisted in the development of the Python code (PyMC, NumPyro/JAGS backend) implementing the hierarchical Bayesian model, for the drafting, revision and documentation of the code. No experimental data were generated or modified by the tool, and the resulting figures are produced by this validated code and not generated directly by the tool. The entire text and code were reviewed, corrected and validated by the authors, who take full responsibility for them; the soundness of the results was verified through the MCMC convergence criteria (no divergent transitions, R̂ ≤ 1.01, ESS ≥ 400) and by comparison with the reference Expostats/JAGS implementation.
