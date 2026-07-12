@@ -178,16 +178,16 @@ DPAC = percentile(p_critere_posterior, 70)
 
 The choice of the 70th percentile (rather than the median or mean) follows the Expostats convention: it corresponds to a *cautious but not ultra-conservative* decision — there is a 70% probability that the true P95 is below the DPAC.
 
-### DPAC variability band — DPAC_10 / DPAC_90
+### DPAC variability band — DPAC_90 / DPAC_10
 
-The DPAC is a single point estimate; it says nothing about how precisely it was determined from the available data. `DPAC_10` and `DPAC_90` quantify that precision using the exact same posterior, at no extra computational cost:
+The DPAC is a single point estimate; it says nothing about how precisely it was determined from the available data. `DPAC_90` and `DPAC_10` quantify that precision using the exact same posterior, at no extra computational cost. Their labels follow an **accepted-risk convention** rather than the raw percentile: `DPAC_x` is the bound corresponding to x% accepted risk of exceedance.
 
 ```
-DPAC_10 = percentile(p_critere_posterior, 10)   # 90% probability the true P95 exceeds this value
-DPAC_90 = percentile(p_critere_posterior, 90)   # 10% probability the true P95 exceeds this value
+DPAC_90 = percentile(p_critere_posterior, 10)   # 90% accepted risk → lenient (lower) bound
+DPAC_10 = percentile(p_critere_posterior, 90)   # 10% accepted risk → conservative (upper) bound
 ```
 
-`[DPAC_10, DPAC_90]` is an **80% credible interval** of the P95 posterior: 80% of the 16 000 posterior draws fall within this band. A narrow band indicates the data constrain the model well; a wide band signals high uncertainty (typically from a large proportion of censored values or a small sample size). Unlike the point DPAC (fixed at the 70th percentile), the two bounds are read directly off the same posterior distribution — no additional MCMC sampling, no resampling of the data.
+`[DPAC_90, DPAC_10]` is an **80% credible interval** of the P95 posterior: 80% of the 16 000 posterior draws fall within this band. A narrow band indicates the data constrain the model well; a wide band signals high uncertainty (typically from a large proportion of censored values or a small sample size). Unlike the point DPAC (fixed at the 70th percentile), the two bounds are read directly off the same posterior distribution — no additional MCMC sampling, no resampling of the data.
 
 ---
 
@@ -227,14 +227,14 @@ Optional columns `LoD effectif` / `LoQ effectif` set the detection thresholds gl
 
 | Output | Description |
 |---|---|
-| `DPAC_logfile.xlsx` — `DPAC Log` sheet | One row per file: GM, GSD, DPAC, DPAC_10, DPAC_90 |
+| `DPAC_logfile.xlsx` — `DPAC Log` sheet | One row per file: GM, GSD, DPAC, DPAC_90, DPAC_10 |
 | `DPAC_logfile.xlsx` — `*_risk` sheets | Risk curve data (overexposure% vs OEL, 100 points) |
-| Risk curves plot | Overexposure% vs OEL with the DPAC10-DPAC90 band |
-| Comparative chart | Horizontal DPAC10-DPAC90 comparison across all analysed files |
+| Risk curves plot | Overexposure% vs OEL with the DPAC_90-DPAC_10 band |
+| Comparative chart | Horizontal DPAC_90-DPAC_10 comparison across all analysed files |
 
 ### Risk curve reading
 
-- Shaded band: 80% DPAC variability band (DPAC10–DPAC90)
+- Shaded band: 80% DPAC variability band (DPAC_90–DPAC_10)
 - Arrow-annotated point: DPAC value at the target risk level
 
 ---
@@ -249,18 +249,19 @@ Optional columns `LoD effectif` / `LoQ effectif` set the detection thresholds gl
 | DPAC ≈ OEL | Uncertain zone — decision requires contextualisation |
 | DPAC > OEL | Overexposure risk — corrective measures should be considered |
 
-### DPAC variability band — DPAC_10 / DPAC_90
+### DPAC variability band — DPAC_90 / DPAC_10
 
-`[DPAC_10, DPAC_90]` is an 80% credible interval reflecting **statistical uncertainty** around the DPAC. A narrow band indicates that the data constrain the model well; a wide band signals high uncertainty (typically due to a large proportion of censored values or a small sample size). Both bounds are read directly from the P95 posterior (see "DPAC variability band" above).
+`[DPAC_90, DPAC_10]` is an 80% credible interval reflecting **statistical uncertainty** around the DPAC. A narrow band indicates that the data constrain the model well; a wide band signals high uncertainty (typically due to a large proportion of censored values or a small sample size). Both bounds are read directly from the P95 posterior (see "DPAC variability band" above).
 
-### MCMC diagnostics
+### MCMC diagnostics and validity
 
 | Indicator | Acceptable value | Meaning |
 |---|---|---|
 | r̂ (r_hat) | < 1.01 | Chain convergence |
 | ESS (bulk/tail) | > 400 | Effective number of independent samples |
+| Censored fraction | ≤ 75% | Above this, the fit is invalidated regardless of MCMC diagnostics |
 
-r̂ > 1.01 on `sigma_B` or `sigma_W` may indicate a Neal's funnel geometry. The model uses non-centred parameterisation to mitigate this.
+r̂ > 1.01 on `sigma_B` or `sigma_W` may indicate a Neal's funnel geometry. The model uses non-centred parameterisation to mitigate this. A dataset where more than 75% of measurements are censored (e.g. >30 out of 40) is marked "Not applicable" even if the MCMC converges cleanly, since the fit is then driven almost entirely by the censoring bounds rather than by detected data.
 
 ---
 
@@ -268,7 +269,7 @@ r̂ > 1.01 on `sigma_B` or `sigma_W` may indicate a Neal's funnel geometry. The 
 
 | File | Content |
 |---|---|
-| `DPAC_logfile.xlsx` | `DPAC Log` sheet: summary table (GM, GSD, DPAC, DPAC_10, DPAC_90) — one row per analysis |
+| `DPAC_logfile.xlsx` | `DPAC Log` sheet: summary table (GM, GSD, DPAC, DPAC_90, DPAC_10) — one row per analysis |
 | `DPAC_logfile.xlsx` | `*_risk` sheets: risk curves (100 OEL × overexposure fraction points) |
 
 ---
